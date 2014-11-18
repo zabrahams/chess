@@ -88,19 +88,16 @@ class Pawn < Piece
   end
 
   def vertical_moves
-    moves = []
-
     new_pos = add_pos(pos, [0, @direction])
 
-    return moves unless @board[new_pos].nil? && on_board?(new_pos)
+    return [] unless @board[new_pos].nil? && on_board?(new_pos)
 
-    moves << new_pos
+    moves = [new_pos]
 
     if pos == @start_pos
       new_pos = pos_add(pos, [0, 2 * @direction])
       moves << new_pos if @board[new_pos].nil?
     end
-
 
     moves
   end
