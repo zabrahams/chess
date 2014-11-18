@@ -19,6 +19,10 @@ class Piece
     [pos1[0] + pos2[0], pos1[1] + pos2[1]]
   end
 
+  def on_board?(pos)
+    pos.all { |num| num.between?(0, 7) }
+  end
+
 end
 
 class SlidingPiece < Piece
@@ -29,7 +33,12 @@ class SlidingPiece < Piece
 
     directions.each do |dir|
       current_pos = pos_add(pos, dir)
-      while current_pos.all { |num| num.between?(0, 7) }
+      while on_board?(current_pos)
+        unless board[current_pos].nil?
+          moves << current_pos unless board[current_pos].color == self.color
+          break
+        end
+
         moves << current_pos
         current_pos = pos_add(current_pos, dir)
       end
@@ -46,7 +55,11 @@ class SteppingPiece < Piece
 
     directions.each do |dir|
       new_pos = pos_add(pos, dir)
-      moves << new_pos if new_pos.all? { |num| num.between?(0, 7) }
+      if on_board?(new_pos)
+        unless !board[new_pos].nil? && board[new_pos].color == self.color
+          moves << new_pos
+        end
+      end
     end
 
     moves
@@ -57,32 +70,41 @@ class Pawn < Piece
 
   def initialize(pos, color, board)
     @start_pos = pos.dup
+    @direction = color == :black ? -1 : 1
     super
   end
 
   def moves
+    moves = diagonal_moves + vertical_moves
+  end
 
-    y_moves = {:black => -1, :white => 1}
+  def diagonal_moves
+    moves = [pos_add(pos, [1, @direction]), pos_add(pos, [-1, @direction])]
 
-    directions = [[-1, y_moves[color]],
-                  [0, y_moves[color]],
-                  [1, y_moves[color]]]
+    moves.select do |move|
+      on_board?(move) && !@board[move].nil? && @board[move].color != self.color
+    end
 
-    current_pos = pos
+  end
 
+  def vertical_moves
     moves = []
 
-    directions.each do |dir|
-      new_pos = pos_add(pos, dir)
-      moves << new_pos if new_pos.all? { |num| num.between?(0, 7) }
-    end
+    new_pos = add_pos(pos, [0, @direction])
+
+    return moves unless @board[new_pos].nil? && on_board?(new_pos)
+
+    moves << new_pos
 
     if pos == @start_pos
-      moves << pos_add(pos, [0, 2 * y_moves[color]])
+      new_pos = pos_add(pos, [0, 2 * @direction])
+      moves << new_pos if @board[new_pos].nil?
     end
+
 
     moves
   end
+
 
 end
 
