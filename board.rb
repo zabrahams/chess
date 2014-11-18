@@ -17,8 +17,8 @@ class Board
     [0, 7] => [Rook, :black],
     [1, 7] => [Knight, :black],
     [2, 7] => [Bishop, :black],
-    [3, 7] => [King, :black],
-    [4, 7] => [Queen, :black],
+    [3, 7] => [Queen, :black],
+    [4, 7] => [King, :black],
     [5, 7] => [Bishop, :black],
     [6, 7] => [Knight, :black],
     [7, 7] => [Rook, :black]
@@ -45,6 +45,10 @@ class Board
     Board.new(positions)
   end
 
+  def checkmate?(color)
+    in_check?(color) && pieces(color).all? { |piece| piece.valid_moves.empty?}
+  end
+
   def in_check?(color)
     king = find_king(color)
     color == :white ? enemy = :black : enemy = :white
@@ -57,14 +61,22 @@ class Board
   end
 
   def move(start, end_pos)
-
     begin
       piece = self[start]
       raise MoveError.new "No piece at this location." if piece.nil?
-      raise MoveError.new "Target position blocked." unless piece.moves.include?(end_pos)
+      raise MoveError.new "Invalid move." unless piece.moves.include?(end_pos)
+      raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
+      self[start] = nil
+      self[end_pos] = piece
+      piece.pos = end_pos
     rescue MoveError => err
       puts err.message
     end
+
+  end
+
+  def move!(start, end_pos)
+    piece = self[start]
 
     self[start] = nil
     self[end_pos] = piece

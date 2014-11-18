@@ -23,9 +23,20 @@ class Piece
     pos.all? { |num| num.between?(0, 7) }
   end
 
-  def dup
-    self.class.new([self.pos.dup], self.color, nil)
+  def valid_moves
+    moves.reject { |move| move_into_check?(move) }
   end
+
+  def move_into_check?(square)
+    new_board = board.dup
+    new_board.move!(pos, square)
+    new_board.in_check?(color)
+
+  end
+
+  # def dup
+  #   self.class.new([self.pos.dup], self.color, nil)
+  # end
 
 
 
