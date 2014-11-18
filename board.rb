@@ -34,9 +34,15 @@ class Board
     pawns
   end
 
-  def initialize
+  def initialize(positions = nil)
+    positions ||= (START_POS.merge(Board.generate_pawns))
     @grid = Array.new(8) { Array.new(8) }
-    place_pieces
+    place_pieces(positions)
+  end
+
+  def dup
+    positions = extract_position
+    Board.new(positions)
   end
 
   def in_check?(color)
@@ -94,7 +100,6 @@ class Board
     puts render
   end
 
-
   private
 
   def squares
@@ -111,14 +116,24 @@ class Board
     end
   end
 
-  def place_pieces
-    (START_POS.merge(Board.generate_pawns)).each do |pos, piece|
+  def place_pieces(positions = start)
+
+    positions.each do |pos, piece|
       self[pos] = (piece[0].new(pos, piece[1], self))
     end
   end
 
   def find_king(color)
     pieces(color).select { |piece| piece.class == King }.first
+  end
+
+  def extract_position
+    positions = {}
+    pieces.each do |piece|
+      positions[piece.pos.dup] = [piece.class, piece.color]
+    end
+
+    positions
   end
 
 end

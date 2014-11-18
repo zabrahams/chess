@@ -23,6 +23,12 @@ class Piece
     pos.all? { |num| num.between?(0, 7) }
   end
 
+  def dup
+    self.class.new([self.pos.dup], self.color, nil)
+  end
+
+
+
 end
 
 class SlidingPiece < Piece
@@ -69,8 +75,8 @@ end
 class Pawn < Piece
 
   def initialize(pos, color, board)
-    @start_pos = pos.dup
     @direction = color == :black ? -1 : 1
+    @start_y = color == :black ? 6 : 1
     super
   end
 
@@ -98,7 +104,7 @@ class Pawn < Piece
 
     moves = [new_pos]
 
-    if pos == @start_pos
+    if pos[1] == @start_y
       new_pos = pos_add(pos, [0, 2 * @direction])
       moves << new_pos if @board[new_pos].nil?
     end
