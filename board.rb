@@ -1,5 +1,8 @@
 require "./pieces.rb"
 
+class MoveError < StandardError
+end
+
 class Board
 
   START_POS = {
@@ -22,7 +25,6 @@ class Board
   }
 
   def self.generate_pawns
-
     pawns = Hash.new {[]}
     (0..7).each do |x|
       pawns[[x, 1]] = [Pawn, :white]
@@ -48,6 +50,21 @@ class Board
     end
   end
 
+  def move(start, end_pos)
+
+    begin
+      piece = self[start]
+      raise MoveError.new "No piece at this location." if piece.nil?
+      raise MoveError.new "Target position blocked." unless piece.moves.include?(end_pos)
+    rescue MoveError => err
+      puts err.message
+    end
+
+    self[start] = nil
+    self[end_pos] = piece
+    piece.pos = end_pos
+  end
+
   def [](pos)
     x, y = pos
     @grid[y][x]
@@ -60,10 +77,25 @@ class Board
   end
 
   def inspect
-    pieces.map do |piece|
-      { piece.pos => [piece.color, piece.class] }
-    end.to_s
+    render
   end
+
+  def render
+
+    @grid.reverse.map do |row|
+      row.map do |square|
+        square.nil? ? "_" : "#{square.render}"
+      end.join(" ")
+    end.join("\n")
+
+  end
+
+  def display
+    puts render
+  end
+
+
+  private
 
   def squares
     @grid.flatten
@@ -78,8 +110,6 @@ class Board
       all_pieces.select { |piece| piece.color == color}
     end
   end
-
-  private
 
   def place_pieces
     (START_POS.merge(Board.generate_pawns)).each do |pos, piece|

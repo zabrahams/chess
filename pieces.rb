@@ -7,7 +7,7 @@ class Piece
 
 
 
-  attr_reader :pos, :color, :board
+  attr_accessor :pos, :color, :board
 
   def initialize(pos, color, board)
     @pos = pos
@@ -74,6 +74,10 @@ class Pawn < Piece
     super
   end
 
+  def render
+    color == :black ? "P" : "p"
+  end
+
   def moves
     moves = diagonal_moves + vertical_moves
   end
@@ -111,6 +115,10 @@ class Queen < SlidingPiece
     super(STRAIGHT + DIAGONAL)
   end
 
+  def render
+    color == :black ? "Q" : "q"
+  end
+
 end
 
 class Rook < SlidingPiece
@@ -118,6 +126,11 @@ class Rook < SlidingPiece
   def moves
     super(STRAIGHT)
   end
+
+  def render
+    color == :black ? "R" : "r"
+  end
+
 end
 
 class Bishop < SlidingPiece
@@ -125,12 +138,21 @@ class Bishop < SlidingPiece
   def moves
     super(DIAGONAL)
   end
+
+  def render
+    color == :black ? "B" : "b"
+  end
+
 end
 
 class Knight < SteppingPiece
 
   def moves
     super(HORSE)
+  end
+
+  def render
+    color == :black ? "H" : "h"
   end
 
 end
@@ -141,4 +163,7 @@ class King < SteppingPiece
     super(STRAIGHT + DIAGONAL)
   end
 
+  def render
+    color == :black ? "K" : "k"
+  end
 end
