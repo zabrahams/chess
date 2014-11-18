@@ -20,7 +20,7 @@ class Piece
   end
 
   def on_board?(pos)
-    pos.all { |num| num.between?(0, 7) }
+    pos.all? { |num| num.between?(0, 7) }
   end
 
 end
@@ -88,7 +88,7 @@ class Pawn < Piece
   end
 
   def vertical_moves
-    new_pos = add_pos(pos, [0, @direction])
+    new_pos = pos_add(pos, [0, @direction])
 
     return [] unless @board[new_pos].nil? && on_board?(new_pos)
 

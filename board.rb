@@ -37,12 +37,15 @@ class Board
     place_pieces
   end
 
-  def place_pieces
+  def in_check?(color)
+    king = find_king(color)
+    color == :white ? enemy = :black : enemy = :white
 
-    (START_POS.merge(Board.generate_pawns)).each do |pos, piece|
-      self[pos] = (piece[0].new(pos, piece[1], self))
+    pieces(enemy).any? do |piece|
+      piece.moves.any? do |move|
+        move == king.pos
+      end
     end
-
   end
 
   def [](pos)
@@ -57,13 +60,35 @@ class Board
   end
 
   def inspect
-    squares.reject(&:nil?).map do |piece|
-      {piece.pos => [piece.color, piece.class]}
+    pieces.map do |piece|
+      { piece.pos => [piece.color, piece.class] }
     end.to_s
   end
 
   def squares
     @grid.flatten
+  end
+
+  def pieces(color = nil)
+    all_pieces = squares.reject(&:nil?)
+
+    if color.nil?
+      all_pieces
+    else
+      all_pieces.select { |piece| piece.color == color}
+    end
+  end
+
+  private
+
+  def place_pieces
+    (START_POS.merge(Board.generate_pawns)).each do |pos, piece|
+      self[pos] = (piece[0].new(pos, piece[1], self))
+    end
+  end
+
+  def find_king(color)
+    pieces(color).select { |piece| piece.class == King }.first
   end
 
 end
