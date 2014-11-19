@@ -1,5 +1,3 @@
-require "./board.rb"
-
 class InputError < StandardError
 end
 
@@ -12,8 +10,7 @@ class Game
     @white = white
     @black = black
     @colors = { white => :white,
-               black => :black
-              }
+               black => :black }
     @current_player = white
   end
 
@@ -62,58 +59,10 @@ class Game
 
   def winner
     if over?
-      board.checkmate?(:white) ? (return :white) : (return :black)
+      return (board.checkmate?(:white) ? :white : :black)
     end
 
     nil
   end
 
-end
-
-class HumanPlayer
-
-  def play_turn
-    start_pos = get_input("Enter the coordinates of the piece you want to move:")
-    end_pos = get_input ("Enter the coordinates of the square you want to move it to:")
-
-    [start_pos, end_pos]
-  end
-
-  private
-
-  def get_input(prompt)
-    puts prompt
-
-    begin
-      print ">"
-      pos = gets.chomp
-      pos = parse_input(pos)
-    rescue InputError => err
-      puts err.message
-      retry
-    end
-
-    pos
-  end
-
-  def parse_input(input)
-    validate_input(input)
-
-    input.split(",").map(&:to_i)
-  end
-
-  def validate_input(input)
-    good_input = /\A[0-7],[0-7]\z/
-    unless input =~ good_input
-      raise InputError.new "Please enter valid coordinates. For example: 2,3"
-    end
-  end
-
-end
-
-if __FILE__ == $PROGRAM_NAME
-  p1 = HumanPlayer.new
-  p2 = HumanPlayer.new
-  g = Game.new(p1, p2)
-  g.play
 end

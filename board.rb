@@ -1,7 +1,3 @@
-require "./pieces.rb"
-require "./make_checker_board.rb"
-require "colorize"
-
 class MoveError < StandardError
 end
 

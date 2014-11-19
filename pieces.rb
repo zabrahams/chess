@@ -1,13 +1,9 @@
-# encoding: utf-8
-
 class Piece
 
   STRAIGHT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
   DIAGONAL = [[1, 1], [-1, 1], [1, -1], [-1, -1]]
   HORSE =    [[-2, 1], [-1, 2], [2, 1], [-2, -1],
               [1, -2], [-1, -2], [2, -1], [1, 2]]
-
-
 
   attr_accessor :pos, :color, :board
 
@@ -33,19 +29,11 @@ class Piece
     new_board = board.dup
     new_board.move!(pos, square)
     new_board.in_check?(color)
-
   end
-
-  # def dup
-  #   self.class.new([self.pos.dup], self.color, nil)
-  # end
-
-
 
 end
 
 class SlidingPiece < Piece
-
 
   def moves(directions)
     moves = []
