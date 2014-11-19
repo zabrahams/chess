@@ -36,6 +36,7 @@ class Board
     positions ||= (START_POS.merge(Board.generate_pawns))
     @grid = Array.new(8) { Array.new(8) }
     place_pieces(positions)
+    @captured = { :black => [], :white => [] }
   end
 
   def dup
@@ -65,6 +66,8 @@ class Board
     raise MoveError.new "Invalid move." unless piece.moves.include?(end_pos)
     raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
 
+    capture(end_pos) if self[end_pos]
+  
     self[start] = nil
     self[end_pos] = piece
     piece.pos = end_pos
@@ -93,21 +96,26 @@ class Board
     render
   end
 
+  def display
+    puts render
+  end
+
   def render
     switch = true
+    row_number = 8
 
-    @grid.reverse.map do |row|
+     captured_piece_border(:black) << num_border <<
+     @grid.reverse.map do |row|
       switch = !switch
+      row_number -= 1
+      " #{row_number} ".on_light_white <<
       row.map do |square|
         (switch = !switch)
         square.nil? ? "   ".checker(switch) : " #{square.render} ".checker(switch)
-      end.join("")
-    end.join("\n")
+      end.join("") <<  " #{row_number} \n".on_light_white
+    end.join("".on_light_white) <<
+    num_border << captured_piece_border(:white)
 
-  end
-
-  def display
-    puts render
   end
 
   private
@@ -133,8 +141,13 @@ class Board
     end
   end
 
+  def capture(pos)
+    color = self[pos].color
+    @captured[color] << self[pos]
+  end
+
   def find_king(color)
-    pieces(color).select { |piece| piece.class == King }.first
+    pieces(color).select { |piece| piece.is_a?(King) }.first
   end
 
   def extract_position
@@ -144,6 +157,22 @@ class Board
     end
 
     positions
+  end
+
+  def captured_piece_border(color)
+    captured = "#{@captured[color].map(&:render).join unless @captured[color].empty?}"
+    target_length = 30
+    white_space = (target_length - captured.length)
+    "#{captured}#{" " * white_space}\n".on_light_white
+
+  end
+
+  def top_border
+   "#{" " * 30}\n".on_light_white
+  end
+
+  def num_border
+    "   #{(0..7).to_a.map { |el| " #{el} " }.join("") }   \n".on_light_white
   end
 
 end
