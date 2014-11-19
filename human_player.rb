@@ -1,10 +1,27 @@
 class HumanPlayer
 
+  PIECES = { "Q" => Queen, "R" => Rook, "B" => Bishop, "Kn" => Knight }
+
   def play_turn
     start_pos = get_input("Enter the coordinates of the piece you want to move:")
     end_pos = get_input ("Enter the coordinates of the square you want to move it to:")
 
     [start_pos, end_pos]
+  end
+
+  def promote(piece)
+    begin
+      puts "You have reached the opponents back rank! Please select the piece you want to promote your pawn to."
+      puts "(Q,R,B,Kn)"
+      print ">"
+      input = gets.chomp
+      raise InputError.new "Not a valid piece." unless PIECES.keys.include?(input)
+    rescue InputError => err
+      puts err.message
+      retry
+    end
+
+    PIECES[input]
   end
 
   private

@@ -11,6 +11,7 @@ class Piece
     @pos = pos
     @color = color
     @board = board
+    @has_moved = false
   end
 
   def pos_add(pos1, pos2)
@@ -22,6 +23,7 @@ class Piece
   end
 
   def valid_moves
+    p moves
     moves.reject { |move| move_into_check?(move) }
   end
 
@@ -29,6 +31,14 @@ class Piece
     new_board = board.dup
     new_board.move!(pos, square)
     new_board.in_check?(color)
+  end
+
+  def has_moved=(value)
+    @has_moved = value
+  end
+
+  def has_moved?
+    @has_moved
   end
 
 end
@@ -75,9 +85,12 @@ end
 
 class Pawn < Piece
 
+  attr_reader :prom_line
+
   def initialize(pos, color, board)
     @direction = color == :black ? -1 : 1
     @start_y = color == :black ? 6 : 1
+    @prom_line = color == :black ? 0 : 7
     super
   end
 
@@ -131,7 +144,13 @@ end
 class Rook < SlidingPiece
 
   def moves
-    super(STRAIGHT)
+    moves = super(STRAIGHT)
+    direction = (pos[1] == 0 ? :left : :right)
+    if board.can_castle?(direction, color)
+      moves << (direction == :left ? [3, pos[1]] : [5, pos[1]])
+    end
+
+    moves
   end
 
   def render
@@ -167,7 +186,11 @@ end
 class King < SteppingPiece
 
   def moves
-    super(STRAIGHT + DIAGONAL)
+    moves = super(STRAIGHT + DIAGONAL)
+    moves << [2, pos[1]] if board.can_castle?(:left, color)
+    moves << [6, pos[1]] if board.can_castle?(:right, color)
+
+    moves
   end
 
   def render

@@ -40,8 +40,20 @@ class Board
   end
 
   def dup
-    positions = extract_position
-    Board.new(positions)
+    positions = extract_positions
+    new_board = Board.new(positions)
+    new_board = set_pieces(Rook, new_board)
+    set_pieces(King, new_board)
+  end
+
+  def set_pieces(wanted_piece, new_board)
+    wanted_pieces = pieces.select{ |piece| piece.is_a?(wanted_piece)}
+
+    wanted_pieces.each do |piece|
+      pos = piece.pos
+      new_board[pos].has_moved = piece.has_moved?
+    end
+    new_board
   end
 
   def checkmate?(color)
@@ -52,7 +64,12 @@ class Board
     king = find_king(color)
     color == :white ? enemy = :black : enemy = :white
 
-    pieces(enemy).any? do |piece|
+    pieces = pieces(enemy).reject do |piece|
+      piece.is_a?(King) ||
+      (piece.is_a?(Rook)  && !piece.has_moved?)
+    end
+
+    pieces.any? do |piece|
       piece.moves.any? do |move|
         move == king.pos
       end
@@ -67,7 +84,8 @@ class Board
     raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
 
     capture(end_pos) if self[end_pos]
-  
+    piece.has_moved = true unless piece.has_moved?
+
     self[start] = nil
     self[end_pos] = piece
     piece.pos = end_pos
@@ -86,7 +104,6 @@ class Board
     @grid[y][x]
   end
 
-
   def []=(pos, value)
     x, y = pos
     @grid[y][x] = value
@@ -97,6 +114,7 @@ class Board
   end
 
   def display
+    system "clear"
     puts render
   end
 
@@ -118,6 +136,19 @@ class Board
 
   end
 
+  def can_castle?(direction, color)
+    x = (direction == :left ? 0 : 7)
+    y = (color == :white ? 0 : 7)
+
+    rook = self[[x, y]]
+    king = find_king(color)
+
+    (!rook.has_moved? &&
+    !king.has_moved? &&
+    empty_between?(rook, king) &&
+    can_move_without_check?(king, direction))
+  end
+
   private
 
   def squares
@@ -135,7 +166,6 @@ class Board
   end
 
   def place_pieces(positions = start)
-
     positions.each do |pos, piece|
       self[pos] = (piece[0].new(pos, piece[1], self))
     end
@@ -150,7 +180,7 @@ class Board
     pieces(color).select { |piece| piece.is_a?(King) }.first
   end
 
-  def extract_position
+  def extract_positions
     positions = {}
     pieces.each do |piece|
       positions[piece.pos.dup] = [piece.class, piece.color]
@@ -159,12 +189,38 @@ class Board
     positions
   end
 
+  def empty_between?(rook, king)
+    squares = []
+
+    if king.pos[0] < rook.pos[0]
+      i, j = (king.pos[0] + 1), rook.pos[0]
+    else
+      i, j = (rook.pos[0] + 1), king.pos[0]
+    end
+
+    x = (i...j)
+    y = king.pos[1]
+
+    x.each do |i|
+      squares << [i, y]
+    end
+
+    squares.all? { |square| self[square].nil? }
+  end
+
+  def can_move_without_check?(king, direction)
+    change = (direction == :left ? -1 : 1)
+    [0, change, change * 2].none? do |x|
+      king.move_into_check?([king.pos[0] + x, king.pos[1]])
+    end
+  end
+
+
   def captured_piece_border(color)
     captured = "#{@captured[color].map(&:render).join unless @captured[color].empty?}"
     target_length = 30
     white_space = (target_length - captured.length)
     "#{captured}#{" " * white_space}\n".on_light_white
-
   end
 
   def top_border

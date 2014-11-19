@@ -15,7 +15,6 @@ class Game
   def play
     until over?
       [white, black].each do |player|
-        system "clear"
         board.display
         begin
           puts "It is #{colors[player]}'s turn!"
@@ -31,7 +30,6 @@ class Game
       end
     end
 
-    system "clear"
     board.display
     puts "The winner is #{winner}."
   end
@@ -40,12 +38,20 @@ class Game
 
   def make_move(move, color)
     start_pos, end_pos = move
+    piece = board[start_pos]
+    player = @colors.key(color)
 
-    if board[end_pos] && board[start_pos].color != color
+    if board[end_pos] && piece.color != color
       raise MoveError.new "Trying to move opponent's piece!"
     end
 
     board.move(start_pos, end_pos)
+
+    if piece.is_a?(Pawn) && piece.prom_line == end_pos[1]
+      board.display
+      piece = player.promote(piece).new(end_pos, color, board)
+      board[end_pos] = piece
+    end
   end
 
   def over?
