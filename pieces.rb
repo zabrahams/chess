@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class Piece
 
   STRAIGHT = [[1, 0], [0, 1], [-1, 0], [0, -1]]
@@ -92,7 +94,7 @@ class Pawn < Piece
   end
 
   def render
-    color == :black ? "P" : "p"
+    color == :black ? "\u265f" : "\u2659"
   end
 
   def moves
@@ -133,7 +135,7 @@ class Queen < SlidingPiece
   end
 
   def render
-    color == :black ? "Q" : "q"
+    color == :black ? "\u265b" : "\u2655"
   end
 
 end
@@ -145,7 +147,7 @@ class Rook < SlidingPiece
   end
 
   def render
-    color == :black ? "R" : "r"
+    color == :black ? "\u265c" : "\u2656"
   end
 
 end
@@ -157,7 +159,7 @@ class Bishop < SlidingPiece
   end
 
   def render
-    color == :black ? "B" : "b"
+    color == :black ? "\u265d" : "\u2657"
   end
 
 end
@@ -169,7 +171,7 @@ class Knight < SteppingPiece
   end
 
   def render
-    color == :black ? "H" : "h"
+    color == :black ? "\u265e" : "\u2658"
   end
 
 end
@@ -181,6 +183,6 @@ class King < SteppingPiece
   end
 
   def render
-    color == :black ? "K" : "k"
+    color == :black ? "\u265a" : "\u2654"
   end
 end
