@@ -1,4 +1,6 @@
 require "./pieces.rb"
+require "./make_checker_board.rb"
+require "colorize"
 
 class MoveError < StandardError
 end
@@ -96,11 +98,14 @@ class Board
   end
 
   def render
+    switch = true
 
     @grid.reverse.map do |row|
+      switch = !switch
       row.map do |square|
-        square.nil? ? "_" : "#{square.render}"
-      end.join(" ")
+        (switch = !switch)
+        square.nil? ? "   ".checker(switch) : " #{square.render} ".checker(switch)
+      end.join("")
     end.join("\n")
 
   end
