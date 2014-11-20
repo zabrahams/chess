@@ -158,8 +158,9 @@ class Board
     x = (direction == :left ? 0 : 7)
     y = (color == :white ? 0 : 7)
 
-    rook = self[[x, y]]
-    king = find_king(color)
+    rook = self[[x, y]] || (return false)
+
+    king = find_king(color) || (return false)
 
     (!rook.has_moved? &&
     !king.has_moved? &&
@@ -183,14 +184,6 @@ class Board
     piece.is_a?(King) && start_x == 4 && (end_x - start_x.abs == 2)
   end
 
-
-
-  private
-
-  def squares
-    @grid.flatten
-  end
-
   def pieces(color = nil)
     all_pieces = squares.reject(&:nil?)
 
@@ -199,6 +192,12 @@ class Board
     else
       all_pieces.select { |piece| piece.color == color}
     end
+  end
+
+  private
+
+  def squares
+    @grid.flatten
   end
 
   def place_pieces(positions = start)

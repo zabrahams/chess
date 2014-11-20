@@ -4,8 +4,8 @@ end
 class Game
   attr_reader :board, :colors, :white, :black
 
-  def initialize(white, black)
-    @board = Board.new
+  def initialize(white, black, position = nil)
+    @board = Board.new(position)
     @white = white
     @black = black
     @fifty_move_count = 0
@@ -16,7 +16,7 @@ class Game
   end
 
   def play
-    until over?
+    until over?(:white) || over?(:black)
       [white, black].each do |player|
         board.display
         begin
@@ -31,12 +31,12 @@ class Game
         end
 
       @previous_positions[board.extract_positions] += 1
-      break if over?
+      break if over?(other_color(colors[player]))
       end
     end
 
     board.display
-     winner ? (puts "The winner is #{winner}.") : (puts "Draw game.")
+     winner ? (puts "The winner is #{winner}.") : (puts draw_message)
   end
 
   private
@@ -70,43 +70,49 @@ class Game
     color == :black ? :white : :black
   end
 
-  def over?
-    board.checkmate?(:white) || board.checkmate?(:black) || draw
+  def over?(color)
+    board.checkmate?(:white) || board.checkmate?(:black) || draw(color)
   end
 
   def winner
-    if over?
-      if board.checkmate?(:white)
-        return :black
-      elsif board.checkmate?(:black)
-        return :white
-      end
-
-    nil
+    if board.checkmate?(:white)
+      :black
+    elsif board.checkmate?(:black)
+      :white
+    else
+      nil
     end
   end
 
-  def draw
-    stalemate || fifty_moves || threefold_repetition || insufficient_material
+  def draw(color)
+    stalemate?(color) || fifty_moves? || threefold_repetition? || insufficient_material?
   end
 
-  def stalemate
-    false
+  def draw_message
+    if stalemate?(:white) || stalemate?(:black)
+      "The game has ended in a draw due to stalemate"
+    elsif fifty_moves?
+      "The game has ended in a draw due to the fifty rule move."
+    elsif threefold_reptition?
+      "The game has ended in a draw due to threefold repetition."
+    elsif insufficient_material?
+       "The game has ended in a draw due to insufficient material."
+     end
+   end
+
+  def stalemate?(color)
+    board.pieces(color).all? { |piece| piece.valid_moves.empty? }
   end
 
-  def fifty_moves
-    draw = @fifty_move_count >= 50
-    puts "You've reached the fifty move count." if draw
-    draw
+  def fifty_moves?
+    @fifty_move_count >= 50
   end
 
-  def threefold_repetition
-    draw =@previous_positions.values.any? { |position_count| position_count >= 3 }
-    puts "You've made a threefold reptitions"
-    draw
+  def threefold_repetition?
+    @previous_positions.values.any? { |position_count| position_count >= 3 }
   end
 
-  def insufficient_material
+  def insufficient_material?
     false
   end
 
