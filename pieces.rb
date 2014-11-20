@@ -40,6 +40,10 @@ class Piece
     @has_moved
   end
 
+  def square_color
+    (pos.inject(:+) % 2 == 0)? :dark : :light
+  end
+
 end
 
 class SlidingPiece < Piece

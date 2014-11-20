@@ -93,7 +93,7 @@ class Game
       "The game has ended in a draw due to stalemate"
     elsif fifty_moves?
       "The game has ended in a draw due to the fifty rule move."
-    elsif threefold_reptition?
+    elsif threefold_repetition?
       "The game has ended in a draw due to threefold repetition."
     elsif insufficient_material?
        "The game has ended in a draw due to insufficient material."
@@ -113,7 +113,29 @@ class Game
   end
 
   def insufficient_material?
-    false
+    return false if bishops_sufficient?
+
+    insufficient = [[:King],
+                    [:Bishop, :King],
+                    [:King, :Knight]]
+    white_pieces = board.pieces(:black).map { |piece| piece.class.name.to_sym }
+    white_pieces.sort!
+    black_pieces = board.pieces(:black).map { |piece| piece.class.name.to_sym }
+    black_pieces.sort!
+
+    (insufficient.include?(white_pieces) &&
+    insufficient.include?(black_pieces))
+  end
+
+  def bishops_sufficient?
+    pieces = board.pieces
+    bishops = pieces.select { |piece| piece.is_a?(Bishop) }
+
+    (pieces.count == bishops.count + 2) &&
+    (bishops.any? do |bishop|
+      bishop.square_color != bishops.first.square_color
+    end)
+
   end
 
 end
