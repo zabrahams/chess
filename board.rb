@@ -84,11 +84,18 @@ class Board
     raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
 
     capture(end_pos) if self[end_pos]
+
     piece.has_moved = true unless piece.has_moved?
+
 
     self[start] = nil
     self[end_pos] = piece
     piece.pos = end_pos
+
+    if castled?(piece, start[0], end_pos[0])
+      direction = (end_pos[0] == 2 ? :left : :right)
+      castle(direction, piece.color)
+    end
   end
 
   def move!(start, end_pos)
@@ -147,6 +154,22 @@ class Board
     !king.has_moved? &&
     empty_between?(rook, king) &&
     can_move_without_check?(king, direction))
+  end
+
+  def castle(direction, color)
+    rook_x = (direction == :left ? 0 : 7)
+    x = (direction == :left ? 3 : 5)
+    y = (color == :white ? 0 : 7)
+
+    rook = self[[rook_x, y]]
+    self[[x, y]] = rook
+    self[[rook_x, y]] = nil
+    rook.pos = [x, y]
+    rook.has_moved = true
+  end
+
+  def castled?(piece, start_x, end_x)
+    piece.is_a?(King) && start_x == 4 && (end_x - start_x.abs == 2)
   end
 
   private
@@ -214,7 +237,6 @@ class Board
       king.move_into_check?([king.pos[0] + x, king.pos[1]])
     end
   end
-
 
   def captured_piece_border(color)
     captured = "#{@captured[color].map(&:render).join unless @captured[color].empty?}"
