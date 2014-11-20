@@ -32,6 +32,8 @@ class Board
     pawns
   end
 
+  attr_reader :captured
+
   def initialize(positions = nil)
     positions ||= (START_POS.merge(Board.generate_pawns))
     @grid = Array.new(8) { Array.new(8) }
@@ -143,6 +145,15 @@ class Board
 
   end
 
+  def extract_positions
+    positions = {}
+    pieces.each do |piece|
+      positions[piece.pos.dup] = [piece.class, piece.color]
+    end
+
+    positions
+  end
+
   def can_castle?(direction, color)
     x = (direction == :left ? 0 : 7)
     y = (color == :white ? 0 : 7)
@@ -171,6 +182,8 @@ class Board
   def castled?(piece, start_x, end_x)
     piece.is_a?(King) && start_x == 4 && (end_x - start_x.abs == 2)
   end
+
+
 
   private
 
@@ -201,15 +214,6 @@ class Board
 
   def find_king(color)
     pieces(color).select { |piece| piece.is_a?(King) }.first
-  end
-
-  def extract_positions
-    positions = {}
-    pieces.each do |piece|
-      positions[piece.pos.dup] = [piece.class, piece.color]
-    end
-
-    positions
   end
 
   def empty_between?(rook, king)

@@ -23,7 +23,6 @@ class Piece
   end
 
   def valid_moves
-    p moves
     moves.reject { |move| move_into_check?(move) }
   end
 
