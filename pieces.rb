@@ -18,7 +18,7 @@ class Piece
     [pos1[0] + pos2[0], pos1[1] + pos2[1]]
   end
 
-  def on_board?(pos)
+  def self.on_board?(pos)
     pos.all? { |num| num.between?(0, 7) }
   end
 
@@ -53,7 +53,7 @@ class SlidingPiece < Piece
 
     directions.each do |dir|
       current_pos = pos_add(pos, dir)
-      while on_board?(current_pos)
+      while Piece.on_board?(current_pos)
         unless board[current_pos].nil?
           moves << current_pos unless board[current_pos].color == self.color
           break
@@ -66,6 +66,7 @@ class SlidingPiece < Piece
 
     moves
   end
+
 end
 
 class SteppingPiece < Piece
@@ -75,7 +76,7 @@ class SteppingPiece < Piece
 
     directions.each do |dir|
       new_pos = pos_add(pos, dir)
-      if on_board?(new_pos)
+      if Piece.on_board?(new_pos)
         unless !board[new_pos].nil? && board[new_pos].color == self.color
           moves << new_pos
         end
@@ -84,16 +85,19 @@ class SteppingPiece < Piece
 
     moves
   end
+
 end
 
 class Pawn < Piece
 
   attr_reader :prom_line
+  attr_accessor :pass_left, :pass_right
 
   def initialize(pos, color, board)
     @direction = color == :black ? -1 : 1
     @start_y = color == :black ? 6 : 1
     @prom_line = color == :black ? 0 : 7
+    @pass_left, @pass_right = false, false
     super
   end
 
@@ -109,15 +113,20 @@ class Pawn < Piece
     moves = [pos_add(pos, [1, @direction]), pos_add(pos, [-1, @direction])]
 
     moves.select do |move|
-      on_board?(move) && !@board[move].nil? && @board[move].color != self.color
+      Piece.on_board?(move) &&
+      !@board[move].nil?  &&
+      @board[move].color != self.color
     end
+
+    moves << pos_add(pos, [1, @direction]) if pass_right
+    moves << pos_add(pos, [-1, @direction]) if pass_left
 
   end
 
   def vertical_moves
     new_pos = pos_add(pos, [0, @direction])
 
-    return [] unless @board[new_pos].nil? && on_board?(new_pos)
+    return [] unless @board[new_pos].nil? && Piece.on_board?(new_pos)
 
     moves = [new_pos]
 
@@ -129,6 +138,9 @@ class Pawn < Piece
     moves
   end
 
+  def reset_en_passant
+    @pass_left, @pass_right = false, false
+  end
 
 end
 

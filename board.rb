@@ -86,6 +86,7 @@ class Board
     raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
 
     capture(end_pos) if self[end_pos]
+    set_en_passant(piece) if piece.is_a?(Pawn) && !piece.has_moved
 
     piece.has_moved = true unless piece.has_moved?
 
@@ -209,6 +210,20 @@ class Board
   def capture(pos)
     color = self[pos].color
     @captured[color] << self[pos]
+  end
+
+  def set_en_passant(piece)
+    x, y = piece.pos
+    left_piece = self[[x - 1, y]] if Piece.on_board(x + 1, y)
+    right_piece = self[[x + 1, y]] if Piece.on_board(x + 1, y)
+
+    if left_piece && left_piece.is_a?(Pawn)
+      left_piece.pass_left = true
+    end
+
+    if right_piece && right_piece.is_a?(Pawn)
+      right_piece.pass_right = true
+    end
   end
 
   def find_king(color)

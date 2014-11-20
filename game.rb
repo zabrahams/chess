@@ -30,6 +30,7 @@ class Game
           retry
         end
 
+      reset_en_passant(player)
       @previous_positions[board.extract_positions] += 1
       break if over?(other_color(colors[player]))
       end
@@ -68,6 +69,12 @@ class Game
 
   def other_color(color)
     color == :black ? :white : :black
+  end
+
+  def reset_en_passant(player)
+    color = @colors[player]
+    pawns = pieces(color).select { |piece| piece.is_a?(Pawn) }
+    pawns.each { |pawn| pawn.reset_en_passant }
   end
 
   def over?(color)
