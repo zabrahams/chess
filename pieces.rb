@@ -18,6 +18,10 @@ class Piece
     [pos1[0] + pos2[0], pos1[1] + pos2[1]]
   end
 
+  def self.pos_add(pos1, pos2)
+    [pos1[0] + pos2[0], pos1[1] + pos2[1]]
+  end
+
   def self.on_board?(pos)
     pos.all? { |num| num.between?(0, 7) }
   end
@@ -90,7 +94,7 @@ end
 
 class Pawn < Piece
 
-  attr_reader :prom_line
+  attr_reader :prom_line, :direction
   attr_accessor :pass_left, :pass_right
 
   def initialize(pos, color, board)
@@ -106,7 +110,7 @@ class Pawn < Piece
   end
 
   def moves
-    moves = diagonal_moves + vertical_moves
+    moves = diagonal_moves + vertical_moves + en_passant_moves
   end
 
   def diagonal_moves
@@ -114,13 +118,9 @@ class Pawn < Piece
 
     moves.select do |move|
       Piece.on_board?(move) &&
-      !@board[move].nil?  &&
+      @board[move] &&
       @board[move].color != self.color
     end
-
-    moves << pos_add(pos, [1, @direction]) if pass_right
-    moves << pos_add(pos, [-1, @direction]) if pass_left
-
   end
 
   def vertical_moves
@@ -136,6 +136,15 @@ class Pawn < Piece
     end
 
     moves
+  end
+
+  def en_passant_moves
+    # p "PassLeft: #{pass_left}"
+    # p "PassRight: #{pass_right}"
+    [].tap do |moves|
+      moves << pos_add(pos, [1, @direction]) if pass_right
+      moves << pos_add(pos, [-1, @direction]) if pass_left
+    end
   end
 
   def reset_en_passant

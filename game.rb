@@ -16,6 +16,7 @@ class Game
   end
 
   def play
+    debugger
     until over?(:white) || over?(:black)
       [white, black].each do |player|
         board.display
@@ -46,6 +47,7 @@ class Game
 
     start_pos, end_pos = move
     piece = board[start_pos]
+    raise MoveError.new "No piece at that location!" unless piece
     prev_captures = board.captured[other_color(color)].dup
     player = @colors.key(color)
 
@@ -73,7 +75,7 @@ class Game
 
   def reset_en_passant(player)
     color = @colors[player]
-    pawns = pieces(color).select { |piece| piece.is_a?(Pawn) }
+    pawns = board.pieces(color).select { |piece| piece.is_a?(Pawn) }
     pawns.each { |pawn| pawn.reset_en_passant }
   end
 

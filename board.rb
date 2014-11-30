@@ -86,10 +86,21 @@ class Board
     raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
 
     capture(end_pos) if self[end_pos]
-    set_en_passant(piece) if piece.is_a?(Pawn) && !piece.has_moved
+    if piece.is_a?(Pawn) && !piece.has_moved?  &&
+                            (end_pos[1] - piece.pos[1]).abs == 2
+
+      set_en_passant(piece)
+    end
 
     piece.has_moved = true unless piece.has_moved?
 
+    if piece.is_a?(Pawn) && piece.en_passant_moves.include?(end_pos)
+      passed_pawn_dir = (piece.pass_left ? -1 : 1)
+      passed_pawn_pos = Piece.pos_add(start, [passed_pawn_dir, 0])
+      capture(passed_pawn_pos)
+      self[passed_pawn_pos] = nil
+
+    end
 
     self[start] = nil
     self[end_pos] = piece
@@ -104,6 +115,13 @@ class Board
   def move!(start, end_pos)
     piece = self[start]
 
+    if piece.is_a?(Pawn) &&
+      piece.en_passant_moves.include?(end_pos)
+      passed_piece_dir = (piece.pass_left ? -1 : 1)
+      passed_pawn_pos = Piece.pos_add(start, [passed_pawn_dir, 0])
+      self[passed_pawn_pos] = nil
+    end
+
     self[start] = nil
     self[end_pos] = piece
     piece.pos = end_pos
@@ -115,6 +133,7 @@ class Board
   end
 
   def []=(pos, value)
+    # This allows [] to set board[-1,0] to [7,0], since -1 is a valid index.
     x, y = pos
     @grid[y][x] = value
   end
@@ -213,16 +232,26 @@ class Board
   end
 
   def set_en_passant(piece)
+    #  debugger
     x, y = piece.pos
-    left_piece = self[[x - 1, y]] if Piece.on_board(x + 1, y)
-    right_piece = self[[x + 1, y]] if Piece.on_board(x + 1, y)
+
+    left_loc = [x - 1, y + (2 * piece.direction)]
+    right_loc = [x + 1, y + (2 * piece.direction)]
+
+    if Piece.on_board?(left_loc)
+      left_piece = self[left_loc]
+    end
+
+    if Piece.on_board?(right_loc)
+      right_piece = self[right_loc]
+    end
 
     if left_piece && left_piece.is_a?(Pawn)
-      left_piece.pass_left = true
+      left_piece.pass_right = true
     end
 
     if right_piece && right_piece.is_a?(Pawn)
-      right_piece.pass_right = true
+      right_piece.pass_left = true
     end
   end
 
