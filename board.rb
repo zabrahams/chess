@@ -1,7 +1,6 @@
-class MoveError < StandardError
-end
-
 class Board
+
+  BOARD_SIZE = 8
 
   START_POS = {
     [0, 0] => [Rook, :white],
@@ -32,13 +31,14 @@ class Board
     pawns
   end
 
-  attr_reader :captured
+  attr_reader :captured, :board_renderer
 
   def initialize(positions = nil)
     positions ||= (START_POS.merge(Board.generate_pawns))
     @grid = Array.new(8) { Array.new(8) }
     place_pieces(positions)
     @captured = { :black => [], :white => [] }
+    @board_renderer = BoardRenderer.new(@captured, @grid)
   end
 
   def dup
@@ -139,30 +139,12 @@ class Board
   end
 
   def inspect
-    render
+    @board_renderer.render
   end
 
   def display
     system "clear"
-    puts render
-  end
-
-  def render
-    switch = true
-    row_number = 8
-
-     captured_piece_border(:black) << num_border <<
-     @grid.reverse.map do |row|
-      switch = !switch
-      row_number -= 1
-      " #{row_number} ".on_light_white <<
-      row.map do |square|
-        (switch = !switch)
-        square.nil? ? "   ".checker(switch) : " #{square.render} ".checker(switch)
-      end.join("") <<  " #{row_number} \n".on_light_white
-    end.join("".on_light_white) <<
-    num_border << captured_piece_border(:white)
-
+    puts @board_renderer.render
   end
 
   def extract_positions
@@ -283,21 +265,6 @@ class Board
     [0, change, change * 2].none? do |x|
       king.move_into_check?([king.pos[0] + x, king.pos[1]])
     end
-  end
-
-  def captured_piece_border(color)
-    captured = "#{@captured[color].map(&:render).join unless @captured[color].empty?}"
-    target_length = 30
-    white_space = (target_length - captured.length)
-    "#{captured}#{" " * white_space}\n".on_light_white
-  end
-
-  def top_border
-   "#{" " * 30}\n".on_light_white
-  end
-
-  def num_border
-    "   #{(0..7).to_a.map { |el| " #{el} " }.join("") }   \n".on_light_white
   end
 
 end

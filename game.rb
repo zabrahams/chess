@@ -1,6 +1,3 @@
-class InputError < StandardError
-end
-
 class Game
   attr_reader :board, :colors, :white, :black
 
