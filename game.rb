@@ -16,7 +16,6 @@ class Game
   end
 
   def play
-    debugger
     until over?(:white) || over?(:black)
       [white, black].each do |player|
         board.display

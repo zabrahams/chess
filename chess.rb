@@ -5,7 +5,17 @@ require 'byebug'
 
 require "colorize"
 require "./make_checker_board.rb"
-require "./pieces.rb"
+
+require "./pieces/piece.rb"
+require "./pieces/sliding_piece.rb"
+require "./pieces/stepping_piece.rb"
+require "./pieces/pawn.rb"
+require "./pieces/king.rb"
+require "./pieces/queen.rb"
+require "./pieces/rook.rb"
+require "./pieces/bishop.rb"
+require "./pieces/knight.rb"
+
 require "./board.rb"
 require "./human_player.rb"
 require "./computer_player.rb"
