@@ -25,7 +25,9 @@ class BoardRenderer
   private
 
   def captured_piece_border(color)
-    captured = "#{@captured[color].map(&:render).join unless @captured[color].empty?}"
+    captured = "#{@captured[color]
+                  .map(&:render)
+                  .join unless @captured[color].empty?}"
     target_length = 30
     white_space = (target_length - @captured[color].length)
     "#{captured}#{" " * white_space}\n".on_light_white
@@ -36,7 +38,7 @@ class BoardRenderer
   end
 
   def hori_border
-    ("   " << ("A".."Z").to_a[0...Board::BOARD_SIZE].map do |letter|
+    ("   " << ("a".."z").to_a[0...Board::BOARD_SIZE].map do |letter|
       " #{letter} "
     end.join("") << "   \n").on_light_white
   end

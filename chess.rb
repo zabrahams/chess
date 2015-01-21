@@ -19,15 +19,15 @@ require "./pieces/knight.rb"
 
 require "./board_renderer.rb"
 require "./board.rb"
-require "./human_player.rb"
-require "./computer_player.rb"
+require "./player.rb"
 require "./game.rb"
+
 require "./debug_pos.rb"
 
 
 if __FILE__ == $PROGRAM_NAME
-  p1 = HumanPlayer.new
-  p2 = HumanPlayer.new
+  p1 = Player.new
+  p2 = Player.new
   g = Game.new(p1, p2)
   g.play
 end

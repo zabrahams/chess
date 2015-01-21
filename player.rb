@@ -1,4 +1,4 @@
-class HumanPlayer
+class Player
 
   PIECES = { "Q" => Queen, "R" => Rook, "B" => Bishop, "Kn" => Knight }
 
@@ -44,16 +44,18 @@ class HumanPlayer
   def parse_input(input)
     validate_input(input)
 
-    input.split(",").map(&:to_i)
+    x = input[0].ord - "a".ord
+    y = input[1].to_i - 1
+    [x, y]
   end
 
   def validate_input(input)
-    good_input = /\A[0-7],[0-7]\z/
+    good_input = /\A[a-h][1-8]\z/
     quit_input = /\A\q\z/
     exit if input =~ quit_input
 
     unless input =~ good_input
-      raise InputError.new "Please enter valid coordinates. For example: 2,3"
+      raise InputError.new "Please enter valid coordinates. For example: d4"
     end
   end
 
