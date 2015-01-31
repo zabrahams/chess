@@ -55,4 +55,7 @@ class Pawn < Piece
     @pass_left, @pass_right = false, false
   end
 
+  def promotes?
+    prom_line == pos[1]
+  end
 end

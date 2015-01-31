@@ -59,13 +59,17 @@ class Board
   end
 
   def checkmate?(color)
-    in_check?(color) && pieces(color).all? { |piece| piece.valid_moves.empty?}
+    in_check?(color) &&
+    pieces(color).all? { |piece| piece.valid_moves.empty?}
   end
 
   def in_check?(color)
     king = find_king(color)
     color == :white ? enemy = :black : enemy = :white
 
+    # Calling in check on a king or an unmoved rook creates an infinite
+    # loop. Luckily, a kind or unmoved rook cannot place a castling king
+    # in check, so they can just be thrown out of the pieces array.
     pieces = pieces(enemy).reject do |piece|
       piece.is_a?(King) ||
       (piece.is_a?(Rook)  && !piece.has_moved?)
@@ -81,35 +85,24 @@ class Board
   def move(start, end_pos)
     piece = self[start]
 
+    # Testing for invalid moves
     raise MoveError.new "No piece at this location." if piece.nil?
     raise MoveError.new "Invalid move." unless piece.moves.include?(end_pos)
     raise MoveError.new "Move places you in check." unless piece.valid_moves.include?(end_pos)
 
+    # Perform related bookeeping
     capture(end_pos) if self[end_pos]
-    if piece.is_a?(Pawn) && !piece.has_moved?  &&
-                            (end_pos[1] - piece.pos[1]).abs == 2
+    set_en_passant(piece) if en_passant?(piece, end_pos)
+    piece.has_moved? || piece.has_moved = true
 
-      set_en_passant(piece)
-    end
+    # Move piece
+    move!(start, end_pos)
+  end
 
-    piece.has_moved = true unless piece.has_moved?
-
-    if piece.is_a?(Pawn) && piece.en_passant_moves.include?(end_pos)
-      passed_pawn_dir = (piece.pass_left ? -1 : 1)
-      passed_pawn_pos = Piece.pos_add(start, [passed_pawn_dir, 0])
-      capture(passed_pawn_pos)
-      self[passed_pawn_pos] = nil
-
-    end
-
-    self[start] = nil
-    self[end_pos] = piece
-    piece.pos = end_pos
-
-    if castled?(piece, start[0], end_pos[0])
-      direction = (end_pos[0] == 2 ? :left : :right)
-      castle(direction, piece.color)
-    end
+  def en_passant?(piece, end_pos)
+    piece.is_a?(Pawn) &&
+    !piece.has_moved? &&
+    (end_pos[1] - piece.pos[1].abs == 2)
   end
 
   def move!(start, end_pos)
@@ -125,6 +118,11 @@ class Board
     self[start] = nil
     self[end_pos] = piece
     piece.pos = end_pos
+
+    if castled?(piece, start[0], end_pos[0])
+      direction = (end_pos[0] == 2 ? :left : :right)
+      castle(direction, piece.color)
+    end
   end
 
   def [](pos)
@@ -214,7 +212,6 @@ class Board
   end
 
   def set_en_passant(piece)
-    #  debugger
     x, y = piece.pos
 
     left_loc = [x - 1, y + (2 * piece.direction)]

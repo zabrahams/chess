@@ -14,7 +14,7 @@ class Player
       puts "You have reached the opponents back rank! Please select the piece you want to promote your pawn to."
       puts "(Q,R,B,Kn)"
       print ">"
-      input = gets.chomp
+      input = gets.chomp.upcase
       raise InputError.new "Not a valid piece." unless PIECES.keys.include?(input)
     rescue InputError => err
       puts err.message

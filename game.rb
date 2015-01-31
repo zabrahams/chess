@@ -43,27 +43,20 @@ class Game
 
     start_pos, end_pos = move
     piece = board[start_pos]
-    raise MoveError.new "No piece at that location!" unless piece
-    prev_captures = board.captured[other_color(color)].dup
     player = @colors.key(color)
 
-    if board[end_pos] && piece.color != color
+    if board[start_pos] && board[start_pos].color != color
       raise MoveError.new "Trying to move opponent's piece!"
     end
 
-    @fifty_move_count += 1
-
+    prev_captures = board.captured[other_color(color)].count
     board.move(start_pos, end_pos)
 
-    new_captures = board.captured[other_color(color)].dup
-    @fifty_move_count = 0 if (piece.is_a?(Pawn) || new_captures != prev_captures)
-
-    if piece.is_a?(Pawn) && piece.prom_line == end_pos[1]
-      board.display
-      piece = player.promote(piece).new(end_pos, color, board)
-      board[end_pos] = piece
+    adjust_fifty_move_count(piece, board, prev_captures, color)
+    check_and_manage_promotion(end_pos, player, color)
     end
-  end
+
+
 
   def other_color(color)
     color == :black ? :white : :black
@@ -89,6 +82,14 @@ class Game
     end
   end
 
+  def check_and_manage_promotion(end_pos, player, color)
+    if board[end_pos].is_a?(Pawn) && board[end_pos].promotes?
+      board.display
+      piece = player.promote(piece).new(end_pos, color, board)
+      board[end_pos] = piece
+    end
+  end
+  
   def draw(color)
     stalemate?(color) || fifty_moves? || threefold_repetition? || insufficient_material?
   end
@@ -111,6 +112,15 @@ class Game
 
   def fifty_moves?
     @fifty_move_count >= 50
+  end
+
+  def adjust_fifty_move_count(piece, board, prev_captures, color)
+    new_captures = board.captured[other_color(color)].count
+    if (piece.is_a?(Pawn) || new_captures != prev_captures)
+      @fifty_move_count = 0
+    else
+      @fifty_move_count += 1
+    end
   end
 
   def threefold_repetition?
