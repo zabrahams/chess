@@ -44,18 +44,25 @@ class Board
   def dup
     positions = extract_positions
     new_board = Board.new(positions)
-    new_board = set_pieces(Rook, new_board)
-    set_pieces(King, new_board)
+    dup_piece_properties(new_board)
+
+    new_board
   end
 
-  def set_pieces(wanted_piece, new_board)
-    wanted_pieces = pieces.select{ |piece| piece.is_a?(wanted_piece)}
+  def dup_piece_properties(new_board)
+    old_squares = self.squares
+    new_squares = new_board.squares
 
-    wanted_pieces.each do |piece|
-      pos = piece.pos
-      new_board[pos].has_moved = piece.has_moved?
+    old_squares.each_with_index do |old_square, i|
+      unless old_square.nil?
+        new_square = new_squares[i]
+        new_square.has_moved = old_square.has_moved?
+        if new_square.is_a?(Pawn)
+          new_square.pass_left = old_square.pass_left
+          new_square.pass_right = old_square.pass_right
+        end
+      end
     end
-    new_board
   end
 
   def checkmate?(color)
@@ -95,6 +102,11 @@ class Board
     set_en_passant(piece) if en_passant?(piece, end_pos)
     piece.has_moved? || piece.has_moved = true
 
+    if piece.is_a?(Pawn)
+      puts piece.pass_left
+      puts piece.pass_right
+    end
+
     # Move piece
     move!(start, end_pos)
   end
@@ -102,7 +114,7 @@ class Board
   def en_passant?(piece, end_pos)
     piece.is_a?(Pawn) &&
     !piece.has_moved? &&
-    (end_pos[1] - piece.pos[1].abs == 2)
+    (end_pos[1] - piece.pos[1]).abs == 2
   end
 
   def move!(start, end_pos)
@@ -110,8 +122,9 @@ class Board
 
     if piece.is_a?(Pawn) &&
       piece.en_passant_moves.include?(end_pos)
-      passed_piece_dir = (piece.pass_left ? -1 : 1)
+      passed_pawn_dir = (piece.pass_left ? -1 : 1)
       passed_pawn_pos = Piece.pos_add(start, [passed_pawn_dir, 0])
+      capture(passed_pawn_pos)
       self[passed_pawn_pos] = nil
     end
 
@@ -194,11 +207,12 @@ class Board
     end
   end
 
-  private
-
   def squares
     @grid.flatten
   end
+
+  private
+
 
   def place_pieces(positions = start)
     positions.each do |pos, piece|
@@ -225,13 +239,18 @@ class Board
       right_piece = self[right_loc]
     end
 
-    if left_piece && left_piece.is_a?(Pawn)
+    if left_piece &&
+       left_piece.is_a?(Pawn) &&
+       left_piece.color != piece.color
       left_piece.pass_right = true
     end
 
-    if right_piece && right_piece.is_a?(Pawn)
+    if right_piece &&
+      right_piece.is_a?(Pawn) &&
+      right_piece.color != piece.color
       right_piece.pass_left = true
     end
+
   end
 
   def find_king(color)
