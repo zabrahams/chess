@@ -1,9 +1,27 @@
 # Chess
 
-An implementation of chess for command line terminals.
+A chess game for command line terminals.
 
-##TODO
+Chess implements all of the standard rules including:
 
-1. Implement En Passant
-2. Refactor project structure and Board class.
-3. Implement a basic AI.
+* castling
+* en Passant
+* stalemate
+* draw by threefold repetition
+* fifty-move rule
+
+## Installation
+
+Chess requires ruby and the [colorize](https://github.com/fazibear/colorize) gem.
+
+To install colorize:
+
+```
+gem install colorize
+```
+
+To play:
+
+```
+ruby chess.rb
+```
