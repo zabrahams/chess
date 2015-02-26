@@ -1,9 +1,11 @@
 # encoding: utf-8
 
-require 'byebug'
+require "rubygems"
+require "bundler/setup"
 
-
+require "byebug"
 require "colorize"
+
 require "./make_checker_board.rb"
 require "./errors.rb"
 

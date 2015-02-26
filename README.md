@@ -12,15 +12,19 @@ Chess implements all of the standard rules including:
 
 ## Installation
 
-Chess requires ruby and the [colorize](https://github.com/fazibear/colorize) gem.
-
-To install colorize:
+If you have git installed clone this repo with the following:
 
 ```
-gem install colorize
+git clone https://github.com/zachabrahams/chess.git
 ```
 
-To play:
+Install the game's dependency on colorize:
+
+```
+bundle install
+```
+
+To play the game run:
 
 ```
 ruby chess.rb
